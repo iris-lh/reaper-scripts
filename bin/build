@@ -1,5 +1,0 @@
-#!/bin/bash
-
-moonc -t lua/ moon/.
-
-cp -r lua/ /Users/isu/Library/Application\ Support/REAPER/Scripts
