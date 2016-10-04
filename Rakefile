@@ -1,6 +1,7 @@
 REAPER_HOME = "/Users/#{ENV['USER']}/Library/Application Support/REAPER/Scripts"
 LUA_DIR = './lua'
 MOON_DIR = './moon'
+MOONC = ''
 
 
 desc 'Deploy lua files to Reaper scripts folder'
