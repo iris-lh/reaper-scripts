@@ -1,4 +1,4 @@
-REAPER_HOME = "/Users/isu/Library/Application Support/REAPER/Scripts"
+REAPER_HOME = "/Users/#{ENV['USER']}/Library/Application Support/REAPER/Scripts"
 LUA_DIR = './lua'
 MOON_DIR = './moon'
 
