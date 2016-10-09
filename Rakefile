@@ -1,29 +1,55 @@
+require 'yaml'
+
 REAPER_HOME = "/Users/#{ENV['USER']}/Library/Application Support/REAPER/Scripts"
 LUA_DIR = './lua'
 MOON_DIR = './moon'
-MOONC = ''
+
 
 
 desc 'Deploy lua files to Reaper scripts folder'
-task :deploy => :build do
+task :deploy => :compile do
   `cp -r #{LUA_DIR}/ '#{REAPER_HOME}'`
 end
 
 
-desc 'Build moons into luas'
-task :build => :cleanup do
-  `moonc -t #{LUA_DIR}/ #{MOON_DIR}/.`
+
+desc 'Compile stacked moons into luas'
+task :compile => :stack do
+  Dir["#{MOON_DIR}/*"].map do |moon_file|
+    # `moonc -o #{LUA_DIR}/#{tokenize moon_file}.lua #{moon_file}/#{tokenize moon_file}.moon`
+    `moonc #{moon_file}/#{tokenize moon_file}.moon`
+
+    # puts "moonc -o #{LUA_DIR}/#{tokenize moon_file}.lua #{moon_file}/./#{tokenize moon_file}.moon"
+  end
 end
 
 
+
+desc 'Stack moons on top of each other'
+task :stack => :cleanup do
+  Dir["#{MOON_DIR}/*"].map do |moon_file|
+    script_name = tokenize moon_file
+    script_dir = "#{MOON_DIR}/#{script_name}"
+    stack = convert_yaml "#{script_dir}/build-stack.yml"
+    target_file = File.open("#{script_dir}/#{script_name}.moon", "w")
+
+    stack['local'].each do |file|
+      file = File.open("#{script_dir}/#{file}.moon", "rb")
+      contents = file.read
+      target_file.write contents
+    end
+  end
+end
+
+
+
 desc 'Clean up unneeded lua files'
-task :cleanup => [:make_moon_tokens, :make_lua_files] do
-  @luas.each do |lua_file|
-    file_token = tokenize lua_file
-    reaper_file = "#{REAPER_HOME}/#{file_token}.lua"
-    unless @moon_tokens.include? file_token
-      File.delete lua_file
-      puts "Removed #{lua_file}"
+task :cleanup => :make_tokens do
+  @lua_tokens.each do |lua_token|
+    reaper_file = "#{REAPER_HOME}/#{lua_token}.lua"
+    unless @moon_tokens.include? lua_token
+      File.delete "#{LUA_DIR}/#{lua_token}.lua"
+      puts "Removed #{LUA_DIR}/#{lua_token}.lua"
       if File.exists? reaper_file
         File.delete reaper_file
         puts "Removed #{reaper_file}"
@@ -33,18 +59,24 @@ task :cleanup => [:make_moon_tokens, :make_lua_files] do
 end
 
 
-task :make_moon_tokens do
-  @moon_tokens = Dir["#{MOON_DIR}/*.moon"].map do |moon_file|
+
+task :make_tokens do
+  @moon_tokens = Dir["#{MOON_DIR}/*"].map do |moon_file|
     tokenize moon_file
+  end
+  @lua_tokens = Dir["#{LUA_DIR}/*.lua"].map do |lua_file|
+    tokenize lua_file
   end
 end
 
 
-task :make_lua_files do
-  @luas = Dir["#{LUA_DIR}/*.lua"]
-end
-
 
 def tokenize(file)
   file.gsub(/^.*\//, '').gsub(/\..*$/, '')
+end
+
+def convert_yaml(path)
+  file = File.open("#{path}", "rb")
+  contents = file.read
+  YAML.load(contents)
 end
