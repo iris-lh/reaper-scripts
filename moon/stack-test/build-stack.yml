@@ -1,0 +1,6 @@
+external:
+  # - pl for instance
+local:
+  - foo
+  - bar
+  - main
