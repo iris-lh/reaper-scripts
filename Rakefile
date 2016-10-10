@@ -1,3 +1,4 @@
+require 'open3'
 require 'yaml'
 
 REAPER_HOME = "/Users/#{ENV['USER']}/Library/Application Support/REAPER/Scripts"
@@ -16,8 +17,23 @@ end
 
 desc 'Compile stacked moons into luas'
 task :compile do # => :stack do
+
   Dir["#{MOON_DIR}/*"].map do |script_dir|
-    `moonc -o #{LUA_DIR}/#{tokenize script_dir}.lua #{script_dir}/stacked.moon`
+    stacked = stack_moon script_dir
+    stdout, stderr, status = Open3.capture3('echo "'+"#{stacked}"+'" | moonc --')
+
+    if stderr != ''
+      puts 'stderr:'
+      puts '-------'
+      puts stderr
+    else
+      puts 'stdout:'
+      puts '-------'
+      puts stdout
+    end
+
+    puts "\n"*5
+
   end
 end
 
@@ -77,6 +93,24 @@ task :make_tokens do
   @lua_tokens = Dir["#{LUA_DIR}/*.lua"].map do |lua_file|
     tokenize lua_file
   end
+end
+
+
+
+def stack_moon(script_dir)
+    stack = convert_yaml "#{script_dir}/stackfile.yml"
+
+    stacked_moon = ''
+
+    stack['local'].each do |file_in_stack|
+      File.open("#{script_dir}/#{file_in_stack}.moon", "rb") do |f|
+        contents = f.read
+        stacked_moon += contents
+      end
+    end
+
+    return stacked_moon
+
 end
 
 
