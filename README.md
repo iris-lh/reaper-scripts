@@ -1,5 +1,5 @@
 # reaper-scripts
-Some scripts written for the Reaper DAW.
+Some scripts written in MoonScript for the Reaper DAW (with Ruby and Bash for housekeeping).
 
 To set up and deploy scripts:
 
