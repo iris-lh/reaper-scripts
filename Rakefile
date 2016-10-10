@@ -17,7 +17,7 @@ end
 desc 'Compile stacked moons into luas'
 task :compile do # => :stack do
   Dir["#{MOON_DIR}/*"].map do |script_dir|
-    `moonc -o #{LUA_DIR}/#{tokenize script_dir}.lua #{moon_file}/stacked.moon`
+    `moonc -o #{LUA_DIR}/#{tokenize script_dir}.lua #{script_dir}/stacked.moon`
   end
 end
 
@@ -56,6 +56,15 @@ task :cleanup => :make_tokens do
         puts "Removed #{reaper_file}"
       end
     end
+  end
+end
+
+
+
+desc 'Wipe all lua files from the repository'
+task :wipe_lua do
+  Dir.glob("#{PWD}/**/*.lua").each do |file|
+    File.delete file
   end
 end
 
