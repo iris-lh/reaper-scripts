@@ -1,8 +1,9 @@
 require 'yaml'
 
 REAPER_HOME = "/Users/#{ENV['USER']}/Library/Application Support/REAPER/Scripts"
-LUA_DIR = './lua'
-MOON_DIR = './moon'
+PWD = ENV['PWD']
+LUA_DIR = "#{PWD}/lua"
+MOON_DIR = "#{PWD}/moon"
 
 
 
