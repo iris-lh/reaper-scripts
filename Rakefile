@@ -16,45 +16,18 @@ end
 
 
 desc 'Compile stacked moons into luas'
-task :compile do # => :stack do
-
+task :compile => :cleanup do
   Dir["#{MOON_DIR}/*"].map do |script_dir|
-    stacked = stack_moon script_dir
-    stdout, stderr, status = Open3.capture3('echo "'+"#{stacked}"+'" | moonc --')
+    build = convert_yaml "#{script_dir}/build.yml"
 
-    if stderr != ''
-      puts 'stderr:'
-      puts '-------'
-      puts stderr
-    else
-      puts 'stdout:'
-      puts '-------'
-      puts stdout
+    compiled_lua = build['local'].map do |file_token|
+      compile_moon "#{script_dir}/#{file_token}.moon"
+    end.join("\n\n------\n\n\n")
+
+    File.open("#{LUA_DIR}/#{tokenize script_dir}.lua", 'w') do |fh|
+      fh.write compiled_lua
+
     end
-
-    puts "\n"*5
-
-  end
-end
-
-
-
-desc 'Stack moons on top of each other'
-task :stack => :cleanup do
-  Dir["#{MOON_DIR}/*"].map do |moon_file|
-    script_name = tokenize moon_file
-    script_dir = "#{MOON_DIR}/#{script_name}"
-    stack = convert_yaml "#{script_dir}/stackfile.yml"
-    target_file = File.open("#{script_dir}/stacked.moon", "w")
-
-    stack['local'].each do |file|
-      File.open("#{script_dir}/#{file}.moon", "rb") do |f|
-        contents = f.read
-        target_file.write contents
-      end
-    end
-
-    target_file.close
   end
 end
 
@@ -64,14 +37,17 @@ desc 'Clean up unneeded lua files'
 task :cleanup => :make_tokens do
   @lua_tokens.each do |lua_token|
     reaper_file = "#{REAPER_HOME}/#{lua_token}.lua"
+
     unless @moon_tokens.include? lua_token
       File.delete "#{LUA_DIR}/#{lua_token}.lua"
       puts "Removed #{LUA_DIR}/#{lua_token}.lua"
+
       if File.exists? reaper_file
         File.delete reaper_file
         puts "Removed #{reaper_file}"
       end
     end
+
   end
 end
 
@@ -97,23 +73,11 @@ end
 
 
 
-def stack_moon(script_dir)
-    stack = convert_yaml "#{script_dir}/stackfile.yml"
-
-    stacked_moon = ''
-
-    stack['local'].each do |file_in_stack|
-      File.open("#{script_dir}/#{file_in_stack}.moon", "rb") do |f|
-        contents = f.read
-        stacked_moon += contents
-      end
-    end
-
-    return stacked_moon
-
+def compile_moon(moon_file)
+  stdout, stderr, status = Open3.capture3("cat #{moon_file} | moonc --")
+  raise "#{status} - #{stderr}" if stderr != ''
+  stdout
 end
-
-
 
 def tokenize(file)
   file.gsub(/^.*\//, '').gsub(/\..*$/, '')
