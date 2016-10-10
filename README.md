@@ -5,5 +5,10 @@ Some scripts written in MoonScript for the Reaper DAW.
 To set up and deploy scripts:
 
 1. `bundle install`
-2. `bundle exec rake stack`
-3. `bundle exec rake deploy`
+2. `bundle exec rake deploy`
+
+You can also use guard to watch your moonscript files.
+
+`bundle exec guard
+`
+It will deploy when it detects changes.
