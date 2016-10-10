@@ -14,12 +14,9 @@ end
 
 
 desc 'Compile stacked moons into luas'
-task :compile => :stack do
-  Dir["#{MOON_DIR}/*"].map do |moon_file|
-    # `moonc -o #{LUA_DIR}/#{tokenize moon_file}.lua #{moon_file}/#{tokenize moon_file}.moon`
-    `moonc #{moon_file}/#{tokenize moon_file}.moon`
-
-    # puts "moonc -o #{LUA_DIR}/#{tokenize moon_file}.lua #{moon_file}/./#{tokenize moon_file}.moon"
+task :compile do # => :stack do
+  Dir["#{MOON_DIR}/*"].map do |script_dir|
+    `moonc -o #{LUA_DIR}/#{tokenize script_dir}.lua #{moon_file}/stacked.moon`
   end
 end
 
@@ -30,14 +27,17 @@ task :stack => :cleanup do
   Dir["#{MOON_DIR}/*"].map do |moon_file|
     script_name = tokenize moon_file
     script_dir = "#{MOON_DIR}/#{script_name}"
-    stack = convert_yaml "#{script_dir}/build-stack.yml"
-    target_file = File.open("#{script_dir}/#{script_name}.moon", "w")
+    stack = convert_yaml "#{script_dir}/stackfile.yml"
+    target_file = File.open("#{script_dir}/stacked.moon", "w")
 
     stack['local'].each do |file|
-      file = File.open("#{script_dir}/#{file}.moon", "rb")
-      contents = file.read
-      target_file.write contents
+      File.open("#{script_dir}/#{file}.moon", "rb") do |f|
+        contents = f.read
+        target_file.write contents
+      end
     end
+
+    target_file.close
   end
 end
 
