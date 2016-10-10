@@ -9,6 +9,6 @@ To set up and deploy scripts:
 
 You can also use guard to watch your moonscript files.
 
-`bundle exec guard
-`
+`bundle exec guard`
+
 It will deploy when it detects changes.
