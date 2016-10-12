@@ -6,8 +6,6 @@
 ttOffsetX = 15  -- tooltip x offset from mouse cursor
 ttOffsetY = 15  -- tooltip y offset from mouse cursor
 
-
-
 gui = {}
 
 init = ->
@@ -38,8 +36,6 @@ mainloop = ->
                   '\n' .. 'Mouse Y - gfx window:'  .. tostring(mouseY)       ..
                   '\n' .. 'Window X: '             .. tostring(windowX)      ..
                   '\n' .. 'Window Y: '             .. tostring(windowY)
-
-
 
   rect1 = {
     x: 10
@@ -75,10 +71,11 @@ mainloop = ->
 
 
   -- Draw position info --
-  gfx.y = gfx.y+50
+  gfx.y = 25
   gfx.drawstr(position_info)
   gfx.update!
-  if gfx.getchar! >= 0 then reaper.defer(mainloop)
+  if gfx.getchar! >= 0
+    reaper.defer(mainloop)
 
 
 
