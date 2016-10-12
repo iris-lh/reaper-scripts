@@ -3,78 +3,78 @@
 
 
 
-tt_x_offset = 20  -- tooltip x offset from mouse cursor
-tt_y_offset = 20  -- tooltip y offset from mouse cursor
-titlebar_h = 31   -- gfx window titlebar height
-border_w = 8      -- gfx window border width
+ttOffsetX = 15  -- tooltip x offset from mouse cursor
+ttOffsetY = 15  -- tooltip y offset from mouse cursor
 
 
-
-----------
--- Init --
-----------
-
--- GUI table ----------------------------------------------------------------------------------
---   contains GUI related settings (some basic user definable settings), initial values etc. --
------------------------------------------------------------------------------------------------
 
 gui = {}
 
 init = ->
 
-  -- Add stuff to '`gui`' table
-  gui.settings = {}                 -- Add 'settings' table to 'gui' table
-  gui.settings.font_size = 20       -- font size
-  gui.settings.docker_id = 0        -- try 0, 1, 257, 513, 1027 etc.
+  -- Add stuff to gui table --
+  gui.settings = {}
+  gui.settings.font_size = 20
+  gui.settings.docker_id = 0    -- try 0, 1, 257, 513, 1027 etc.
 
-  ---------------------------
   -- Initialize gfx window --
-  ---------------------------
-
-  gfx.init('', 300, 220, gui.settings.docker_id)
+  gfx.init('', 300, 250, gui.settings.docker_id)
   gfx.setfont(1,'Arial', gui.settings.font_size)
-  gfx.clear = 3355443  -- matches with 'FUSION: Pro&Clean Theme :: BETA 01' http://forum.cockos.com/showthread.php?t=155329
-    -- (Double click in ReaScript IDE to open the link)
+  gfx.clear = 3355443
 
 
-
---------------
--- Mainloop --
---------------
 
 mainloop = ->
   gfx.x = 10
   gfx.y = 10
-  mouseX, mouseY = gfx.mouse_x, gfx.mouse_y   -- current mouse coordinates are stored to 'mouseX' and 'mouseY'
+  mouseX, mouseY = gfx.mouse_x, gfx.mouse_y
+  mouseScreenX, mouseScreenY = gfx.clienttoscreen(mouseX,mouseY)
 
-  dock_state, windowX, windowY, windowWidth, windowHeight = gfx.dock(-1,0,0,0,0)
+  dock_state, windowX, windowY, windowW, windowH = gfx.dock(-1,0,0,0,0)
+
+  position_info = '\n' .. 'Mouse X - screen: '     .. tostring(mouseScreenX) ..
+                  '\n' .. 'Mouse Y - screen: '     .. tostring(mouseScreenY) ..
+                  '\n' .. 'Mouse X - gfx window: ' .. tostring(mouseX)       ..
+                  '\n' .. 'Mouse Y - gfx window:'  .. tostring(mouseY)       ..
+                  '\n' .. 'Window X: '             .. tostring(windowX)      ..
+                  '\n' .. 'Window Y: '             .. tostring(windowY)
 
 
-  position_info = 'Mouse X - screen ' .. tostring(mouseX+windowX+8) ..
-                        '\n' ..'Mouse Y - screen: ' .. tostring(mouseY+windowY+31) ..
-                        '\n' ..'Mouse X - gfx window: ' .. tostring(mouseX) ..
-                        '\n' ..'Mouse Y - gfx window:' .. tostring(mouseY) ..
-                        '\n' .. 'Window X: ' .. tostring(windowX) ..
-                        '\n' .. 'Window Y: ' .. tostring(windowY)
 
+  rect1 = {
+    x: 10
+    y: 10
+    w: 20
+    h: 20
+  }
+  gfx.rect(rect1.x, rect1.y, rect1.w, rect1.h, 0)
 
-  -- rect 1
-  gfx.rect(10,10,20,20,0)
-  if mouseX > 10 and mouseX < 10+20 and mouseY > 10 and mouseY < 10+20 then -- is mouse on rect 1?
-    reaper.TrackCtl_SetToolTip('mouse on rectangle 1', mouseX+windowX+tt_x_offset+border_w, mouseY+windowY+tt_x_offset+titlebar_h, true)
+  rect2 = {
+    x: 100
+    y: 10
+    w: 40
+    h: 20
+  }
+  gfx.rect(rect2.x, rect2.y, rect2.w, rect2.h, 0)
+
+  if  mouseX > rect1.x         and
+      mouseX < rect1.x+rect1.w and
+      mouseY > rect1.y         and
+      mouseY < rect1.y+rect1.h
+    reaper.TrackCtl_SetToolTip('mouse on rectangle 1', mouseScreenX + ttOffsetX, mouseScreenY + ttOffsetY, true)
+
+  elseif  mouseX > rect2.x     and
+      mouseX < rect2.x+rect2.w and
+      mouseY > rect2.y         and
+      mouseY < rect2.y+rect2.h
+    reaper.TrackCtl_SetToolTip('mouse on rectangle 2', mouseScreenX + ttOffsetX, mouseScreenY + ttOffsetY, true)
+
   else -- clear tool tip
-    reaper.TrackCtl_SetToolTip('', mouseX+windowX+tt_x_offset+border_w, mouseY+windowY+tt_y_offset+titlebar_h, true)
+    reaper.TrackCtl_SetToolTip('', mouseScreenX, mouseScreenY, true)
 
 
-  -- rect 2
-  gfx.rect(100,10,20,20,0)
-  if mouseX > 100 and mouseX < 100+20 and mouseY > 10 and mouseY < 10+20 then -- is mouse on rect 2?
-    reaper.TrackCtl_SetToolTip('mouse on rectangle 2', mouseX+windowX+tt_x_offset+border_w, mouseY+windowY+tt_x_offset+titlebar_h, true)
-  else -- clear tool tip
-    reaper.TrackCtl_SetToolTip('', mouseX+windowX+tt_x_offset+border_w, mouseY+windowY+tt_y_offset+titlebar_h, true)
 
-
-  -- Draw 'position info'
+  -- Draw position info --
   gfx.y = gfx.y+50
   gfx.drawstr(position_info)
   gfx.update!
